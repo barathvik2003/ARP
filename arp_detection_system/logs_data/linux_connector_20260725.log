@@ -1,0 +1,220 @@
+[2026-07-25 17:19:41] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:21:22] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:22:52] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:23:07] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:25:45] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:26:01] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:26:43] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:30:34] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:30:59] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 17:33:24] [ERROR] [linux_connector] Failed to block ARP from 10.75.153.255 on kali
+[2026-07-25 17:34:27] [ERROR] [linux_connector] Failed to block ARP from 172.21.15.255 on kali
+[2026-07-25 17:38:10] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:38:10] [INFO] [linux_connector] Disconnected from Linux server: test_server
+[2026-07-25 17:38:47] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:38:55] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:47:17] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:47:17] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:47:24] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 17:47:30] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 17:47:38] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 17:47:40] [INFO] [linux_connector] Blackholed ARP for 192.0.2.51 on RHEL via ip neigh
+[2026-07-25 17:47:53] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 17:48:08] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 17:48:13] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:48:41] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:48:56] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:49:11] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:49:26] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:49:33] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:49:33] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:50:13] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:50:29] [ERROR] [linux_connector] Failed to connect to 37.27.108.55: timed out
+[2026-07-25 17:51:45] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:51:45] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:51:47] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:51:49] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:51:49] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:51:55] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:51:59] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:51:59] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:52:02] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:52:06] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:52:06] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:52:14] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL via nft
+[2026-07-25 17:52:21] [INFO] [linux_connector] Unblocked ARP from 192.0.2.1 on RHEL
+[2026-07-25 17:52:28] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:52:33] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:52:33] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:53:14] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:53:19] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:53:19] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:53:27] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:53:31] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 17:53:31] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 17:53:38] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 17:53:44] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 17:53:52] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 17:53:54] [INFO] [linux_connector] Blackholed ARP for 192.0.2.51 on RHEL via ip neigh
+[2026-07-25 17:54:06] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 17:54:13] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 17:54:18] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 17:56:11] [WARNING] [linux_connector] No firewall tools found, using ip neigh replacement only
+[2026-07-25 17:56:11] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 17:57:17] [ERROR] [linux_connector] All block methods failed for 10.75.153.255 on kali
+[2026-07-25 17:57:47] [ERROR] [linux_connector] All block methods failed for 172.21.15.255 on kali
+[2026-07-25 17:58:10] [ERROR] [linux_connector] All block methods failed for 172.18.31.255 on kali
+[2026-07-25 18:01:46] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:01:46] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:01:49] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:02:11] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:02:11] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:02:52] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:04:13] [WARNING] [linux_connector] No firewall tools found, using ip neigh replacement only
+[2026-07-25 18:04:13] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:05:38] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:05:38] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:05:51] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:15:35] [WARNING] [linux_connector] No firewall tools found, using ip neigh replacement only
+[2026-07-25 18:15:35] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:15:35] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:17:29] [WARNING] [linux_connector] No firewall tools found, using ip neigh replacement only
+[2026-07-25 18:17:29] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:17:29] [ERROR] [linux_connector] All block methods failed for 192.0.2.50 on kali
+[2026-07-25 18:17:30] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:18:05] [WARNING] [linux_connector] No firewall tools found, using ip neigh replacement only
+[2026-07-25 18:18:05] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:18:05] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:18:33] [WARNING] [linux_connector] No firewall tools found, using ip neigh replacement only
+[2026-07-25 18:18:33] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:18:37] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:20:52] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:20:52] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:20:53] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on kali via nft
+[2026-07-25 18:20:56] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on kali
+[2026-07-25 18:20:56] [INFO] [linux_connector] Blackholed ARP for 192.0.2.51 on kali via ip neigh
+[2026-07-25 18:20:57] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:21:42] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:21:42] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:22:02] [INFO] [linux_connector] Blocked ARP from 192.0.2.100 on kali via nft
+[2026-07-25 18:22:03] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on kali via nft
+[2026-07-25 18:22:05] [INFO] [linux_connector] Unblocked ARP from 192.0.2.100 on kali
+[2026-07-25 18:22:07] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:23:28] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:23:28] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:23:29] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:23:42] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:23:42] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:23:46] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:23:51] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:23:51] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:24:02] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:24:07] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:24:07] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:24:10] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:24:15] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:24:15] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:24:25] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL via nft
+[2026-07-25 18:24:34] [INFO] [linux_connector] Unblocked ARP from 192.0.2.1 on RHEL
+[2026-07-25 18:24:41] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:24:47] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:24:47] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:25:30] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:25:35] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:25:35] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:25:44] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:25:49] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:25:49] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:26:00] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:26:07] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 18:26:16] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:26:19] [INFO] [linux_connector] Blackholed ARP for 192.0.2.51 on RHEL via ip neigh
+[2026-07-25 18:26:36] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:26:43] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 18:26:49] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:27:38] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:27:38] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:28:39] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:28:39] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:28:43] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:28:48] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:28:48] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:28:58] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:29:03] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:29:03] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:29:06] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:29:11] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:29:11] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:29:20] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL via nft
+[2026-07-25 18:29:29] [INFO] [linux_connector] Unblocked ARP from 192.0.2.1 on RHEL
+[2026-07-25 18:29:45] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:29:45] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:29:50] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:29:50] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:29:53] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:29:58] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:29:58] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:30:05] [INFO] [linux_connector] Blocked ARP from 192.0.2.100 on kali via nft
+[2026-07-25 18:30:07] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on kali via nft
+[2026-07-25 18:30:07] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:30:09] [INFO] [linux_connector] Unblocked ARP from 192.0.2.100 on kali
+[2026-07-25 18:30:11] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-25 18:30:13] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:30:13] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:30:16] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:30:21] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:30:21] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:30:30] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL via nft
+[2026-07-25 18:30:38] [INFO] [linux_connector] Unblocked ARP from 192.0.2.1 on RHEL
+[2026-07-25 18:30:45] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:30:51] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:30:51] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:31:33] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:31:38] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:31:38] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:31:46] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:31:51] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:31:51] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:31:59] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:32:09] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 18:32:24] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:32:26] [INFO] [linux_connector] Blackholed ARP for 192.0.2.51 on RHEL via ip neigh
+[2026-07-25 18:32:43] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:33:08] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:33:08] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:33:13] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:33:19] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:33:19] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:33:38] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:33:43] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:33:43] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:33:46] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:33:52] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:33:52] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:34:04] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL via nft
+[2026-07-25 18:34:13] [INFO] [linux_connector] Unblocked ARP from 192.0.2.1 on RHEL
+[2026-07-25 18:34:20] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:34:25] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:34:25] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:35:12] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:35:21] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:35:21] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:35:31] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:35:39] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:35:39] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-25 18:35:47] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:35:57] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 18:36:05] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:36:08] [INFO] [linux_connector] Blackholed ARP for 192.0.2.51 on RHEL via ip neigh
+[2026-07-25 18:36:25] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on RHEL via nft
+[2026-07-25 18:36:32] [INFO] [linux_connector] Unblocked ARP from 192.0.2.50 on RHEL
+[2026-07-25 18:36:38] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-25 18:37:47] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:37:47] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:37:55] [INFO] [linux_connector] Detected firewall backend: nftables (nft)
+[2026-07-25 18:37:55] [INFO] [linux_connector] Connected to Linux server: kali (172.21.12.233)
+[2026-07-25 18:38:06] [INFO] [linux_connector] Blocked ARP from 192.0.2.100 on kali via nft
+[2026-07-25 18:38:07] [INFO] [linux_connector] Blocked ARP from 192.0.2.50 on kali via nft
+[2026-07-25 18:38:09] [INFO] [linux_connector] Unblocked ARP from 192.0.2.100 on kali
+[2026-07-25 18:38:11] [INFO] [linux_connector] Disconnected from Linux server: kali
+[2026-07-27 09:05:04] [INFO] [linux_connector] Disconnected from Linux server: kali

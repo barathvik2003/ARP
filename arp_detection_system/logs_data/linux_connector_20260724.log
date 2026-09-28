@@ -1,0 +1,41 @@
+[2026-07-24 20:58:30] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 20:59:21] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 21:02:31] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 21:02:34] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 21:02:37] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 21:02:46] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 21:02:49] [ERROR] [linux_connector] paramiko not installed. Run: pip install paramiko
+[2026-07-24 21:07:03] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:07:15] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:07:36] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:07:38] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:09:53] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:14:05] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:14:18] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:20:58] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:21:45] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:37:06] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:45:52] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:45:56] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:45:58] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:46:08] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:46:10] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:46:14] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:46:16] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:46:21] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL
+[2026-07-24 21:46:30] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:46:34] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:47:20] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:47:22] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:47:31] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:54:25] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:55:03] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:55:07] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:55:09] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:55:20] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:55:22] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:55:25] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:55:28] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)
+[2026-07-24 21:55:32] [INFO] [linux_connector] Blocked ARP from 192.0.2.1 on RHEL
+[2026-07-24 21:55:41] [INFO] [linux_connector] Disconnected from Linux server: RHEL
+[2026-07-24 21:55:45] [INFO] [linux_connector] Connected to Linux server: RHEL (100.104.140.120)

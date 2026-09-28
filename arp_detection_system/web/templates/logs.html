@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Logs - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Log Viewer</h2>
+        <div class="subtitle">ARP-related logs from all connected servers</div>
+    </div>
+    <div class="header-actions">
+        <button class="btn" onclick="refreshLogs()">&#8635; Refresh</button>
+        <select id="severity-filter" class="btn" onchange="filterLogs()">
+            <option value="">All Severities</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+        </select>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Log Entries</div>
+        <div class="value info" id="log-total">{{ alerts|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Critical</div>
+        <div class="value critical" id="log-critical">{{ alerts|selectattr('severity', 'equalto', 'CRITICAL')|list|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">High</div>
+        <div class="value high" id="log-high">{{ alerts|selectattr('severity', 'equalto', 'HIGH')|list|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Medium</div>
+        <div class="value medium" id="log-medium">{{ alerts|selectattr('severity', 'equalto', 'MEDIUM')|list|length }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Alert &amp; Log History</h3>
+        <span class="text-muted text-sm" id="log-count">{{ alerts|length }} entries</span>
+    </div>
+    <div class="card-body no-pad" style="max-height:600px;overflow-y:auto;" id="log-container">
+        {% if alerts %}
+        {% for a in alerts|reverse %}
+        <div class="log-entry {{ a.severity|lower }}" data-severity="{{ a.severity }}">
+            <span class="badge-severity badge-{{ a.severity|lower }}">{{ a.severity }}</span>
+            <span class="text-muted text-sm">[{{ a.type }}]</span>
+            <span class="text-mono text-sm">{{ a.source_ip }}</span>
+            <span class="text-muted text-sm">{{ a.source_mac }}</span>
+            {{ a.description }}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state"><div class="icon">&#9776;</div><p>No log entries collected yet. Connect to a server and run collection.</p></div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterLogs() {
+    var severity = document.getElementById('severity-filter').value;
+    var entries = document.querySelectorAll('.log-entry');
+    var visible = 0;
+    entries.forEach(function(el) {
+        if (!severity || el.getAttribute('data-severity') === severity) {
+            el.style.display = '';
+            visible++;
+        } else {
+            el.style.display = 'none';
+        }
+    });
+    document.getElementById('log-count').textContent = visible + ' entries';
+}
+
+function refreshLogs() {
+    apiGet('/api/alerts?limit=200', function(data) {
+        var container = document.getElementById('log-container');
+        if (data.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">&#10003;</div><p>No alerts</p></div>';
+            return;
+        }
+        var html = '';
+        data.reverse().forEach(function(a) {
+            html += '<div class="log-entry ' + a.severity.toLowerCase() + '" data-severity="' + a.severity + '">';
+            html += '<span class="badge-severity badge-' + a.severity.toLowerCase() + '">' + a.severity + '</span> ';
+            html += '<span class="text-muted text-sm">[' + a.type + ']</span> ';
+            html += '<span class="text-mono text-sm">' + a.source_ip + '</span> ';
+            html += a.description;
+            html += '</div>';
+        });
+        container.innerHTML = html;
+        document.getElementById('log-total').textContent = data.length;
+        document.getElementById('log-count').textContent = data.length + ' entries';
+    });
+}
+</script>
+{% endblock %}

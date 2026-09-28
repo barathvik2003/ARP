@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}Detection - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>ARP Attack Detection</h2>
+        <div class="subtitle">
+            {% if selected_server %}
+                Scanning remote server: <strong>{{ selected_server }}</strong>
+            {% else %}
+                Select a server above, then run detection
+            {% endif %}
+        </div>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary btn-lg" onclick="runDetection()" id="detect-btn">&#9888; Run Scan</button>
+    </div>
+</div>
+
+<div class="grid-2 mb-16">
+    <div class="card">
+        <div class="card-header"><h3>Scan Configuration</h3></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Target Server</label>
+                <select id="scan-server">
+                    <option value="">Use Selected Server</option>
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>
+                        {{ s.name }} ({{ s.host }}) {% if selected_server == s.name %}[ACTIVE]{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div id="scan-status" class="text-sm text-muted mb-16"></div>
+            <button class="btn btn-primary" onclick="runDetection()">Start Detection</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>Scan Summary</h3></div>
+        <div class="card-body">
+            <div class="stats-grid" style="margin-bottom:0;">
+                <div class="stat-card">
+                    <div class="label">Total Findings</div>
+                    <div class="value info" id="findings-total">{{ detection_results|length }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Critical</div>
+                    <div class="value critical" id="findings-critical">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">ARP Entries</div>
+                    <div class="value success" id="findings-arp">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Log Entries</div>
+                    <div class="value medium" id="findings-logs">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Detection Results</h3>
+        <button class="btn btn-sm" onclick="exportResults()">Export JSON</button>
+    </div>
+    <div class="card-body no-pad" id="results-container">
+        {% if detection_results %}
+        {% for r in detection_results %}
+        <div class="alert-row" data-severity="{{ r.severity }}">
+            <span class="badge-severity badge-{{ r.severity|lower }}">{{ r.severity }}</span>
+            <span class="badge-severity badge-info" style="margin-left:4px;">{{ r.confidence }}</span>
+            <span class="ip">{{ r.attacker_ip }}</span>
+            <span class="text-muted text-sm">{{ r.server|default('') }}</span>
+            <span class="desc"><strong>{{ r.type }}</strong>: {{ r.description }}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state" id="empty-results">
+            <div class="icon">&#9888;</div>
+            <p>{% if selected_server %}Click "Run Scan" to detect ARP attacks on {{ selected_server }}{% else %}Select a server and run a scan{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-16">
+    <div class="card-header">
+        <h3>&#128187; Remote Shell</h3>
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label>Execute command on selected server</label>
+            <div class="flex gap-8">
+                <input type="text" id="remote-cmd" placeholder="e.g., arp -a, ip neigh show, cat /proc/net/arp" style="flex:1;">
+                <button class="btn btn-primary" onclick="runRemoteCmd()">Run</button>
+            </div>
+        </div>
+        <pre id="remote-cmd-output" style="background:var(--bg-primary);padding:12px;border-radius:8px;font-size:12px;max-height:300px;overflow:auto;display:none;"></pre>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function runDetection() {
+    var btn = document.getElementById('detect-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Scanning...';
+
+    var server = document.getElementById('scan-server').value;
+    var data = server ? {server_name: server} : {};
+    var status = document.getElementById('scan-status');
+    status.textContent = 'Connecting to server and collecting ARP data...';
+
+    apiPost('/api/detect', data, function(response) {
+        btn.disabled = false;
+        btn.innerHTML = '&#9888; Run Scan';
+        status.textContent = '';
+
+        var v = response.validations || [];
+        var summary = response.summary || {};
+        var serverName = response.server || 'unknown';
+
+        document.getElementById('findings-total').textContent = v.length;
+        document.getElementById('findings-critical').textContent = summary.by_severity ? (summary.by_severity.CRITICAL || 0) : 0;
+        document.getElementById('findings-arp').textContent = response.arp_count || 0;
+        document.getElementById('findings-logs').textContent = response.log_count || 0;
+
+        var container = document.getElementById('results-container');
+        if (v.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">&#10003;</div><p>No ARP attacks detected on ' + serverName + '. Network appears clean.</p></div>';
+            toast('Scan complete on ' + serverName + ': No issues found', 'success');
+        } else {
+            var html = '';
+            v.forEach(function(r, i) {
+                var color = r.severity === 'CRITICAL' ? 'critical' : r.severity === 'HIGH' ? 'high' : 'medium';
+                html += '<div class="alert-row" data-severity="' + r.severity + '" onclick="showDetail(' + i + ')" style="cursor:pointer;">';
+                html += '<span class="badge-severity badge-' + color + '">' + r.severity + '</span>';
+                html += '<span class="badge-severity badge-info">' + r.confidence + '</span>';
+                html += '<span class="ip">' + r.attacker_ip + '</span>';
+                html += '<span class="text-muted text-sm">' + serverName + '</span>';
+                html += '<span class="desc"><strong>' + r.type + '</strong>: ' + r.description + '</span>';
+                if (r.requires_action) html += '<span class="badge-severity badge-critical">ACTION</span>';
+                html += '</div>';
+            });
+            container.innerHTML = html;
+            window._lastResults = v;
+            toast('Scan complete on ' + serverName + ': ' + v.length + ' findings', 'warning');
+        }
+    }, function() {
+        btn.disabled = false;
+        btn.innerHTML = '&#9888; Run Scan';
+        status.textContent = 'Scan failed. Is the server connected?';
+        toast('Scan failed', 'error');
+    });
+}
+
+function showDetail(idx) {
+    var r = window._lastResults ? window._lastResults[idx] : null;
+    if (!r) return;
+    document.getElementById('detail-title').textContent = r.type + ' - ' + r.severity;
+    var html = '<div class="mb-16">';
+    html += '<p><strong>Attacker IP:</strong> ' + r.attacker_ip + '</p>';
+    html += '<p><strong>Attacker MAC:</strong> ' + (r.attacker_mac || 'N/A') + '</p>';
+    html += '<p><strong>Confidence:</strong> ' + r.confidence + '</p>';
+    html += '<p><strong>Server:</strong> ' + (r.server || 'N/A') + '</p>';
+    html += '<p><strong>Description:</strong> ' + r.description + '</p>';
+    html += '</div>';
+    if (r.evidence && r.evidence.length > 0) {
+        html += '<p class="text-sm text-muted mb-16">Evidence:</p><ul class="evidence-list">';
+        r.evidence.forEach(function(e) { html += '<li>' + e + '</li>'; });
+        html += '</ul>';
+    }
+    if (r.recommendations && r.recommendations.length > 0) {
+        html += '<p class="text-sm text-muted mb-16" style="margin-top:12px;">Recommendations:</p><ul class="recommendation-list">';
+        r.recommendations.forEach(function(rec) { html += '<li>' + rec + '</li>'; });
+        html += '</ul>';
+    }
+    document.getElementById('detail-body').innerHTML = html;
+    document.getElementById('detail-modal').classList.add('active');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function exportResults() {
+    if (window._lastResults) {
+        var blob = new Blob([JSON.stringify(window._lastResults, null, 2)], {type: 'application/json'});
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'arp-detection-results.json';
+        a.click();
+    } else {
+        toast('No results to export', 'error');
+    }
+}
+
+function runRemoteCmd() {
+    var cmd = document.getElementById('remote-cmd').value;
+    if (!cmd) { toast('Enter a command', 'error'); return; }
+    var output = document.getElementById('remote-cmd-output');
+    output.style.display = 'block';
+    output.textContent = 'Executing on server...';
+
+    apiPost('/api/remote-command', {command: cmd}, function(data) {
+        var text = '';
+        if (data.stdout) text += data.stdout;
+        if (data.stderr) text += '\nSTDERR: ' + data.stderr;
+        if (data.exit_code !== 0) text += '\nExit code: ' + data.exit_code;
+        output.textContent = text || '(no output)';
+    }, function() {
+        output.textContent = 'Failed to execute command. Is the server connected?';
+    });
+}
+</script>
+
+<div class="modal-overlay" id="detail-modal">
+    <div class="modal" style="width:600px;">
+        <div class="modal-header">
+            <h3 id="detail-title">Detection Detail</h3>
+            <button class="btn btn-sm" onclick="closeModal('detail-modal')">&times;</button>
+        </div>
+        <div class="modal-body" id="detail-body"></div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('detail-modal')">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

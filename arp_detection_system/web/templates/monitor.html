@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Live Monitor - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Live ARP Monitor</h2>
+        <div class="subtitle">Real-time ARP traffic monitoring and alerting</div>
+    </div>
+    <div class="header-actions">
+        {% if monitor_running %}
+        <button class="btn btn-danger" onclick="stopMonitor()">&#9724; Stop Monitor</button>
+        {% else %}
+        <button class="btn btn-success" onclick="startMonitor()">&#9654; Start Monitor</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="monitor-status" id="monitor-status">
+    <div class="dot {% if monitor_running %}status-dot monitoring{% else %}status-dot offline{% endif %}"></div>
+    <span id="monitor-label">{% if monitor_running %}Monitoring active{% else %}Monitor stopped{% endif %}</span>
+    <span class="text-muted" id="alert-count-badge">Alerts: {{ alerts|length }}</span>
+    <span class="text-muted" style="margin-left:auto;">Gateway: {{ gateway or 'Auto-detect' }}</span>
+</div>
+
+<div class="grid-2 mb-16">
+    <div class="card">
+        <div class="card-header"><h3>Monitor Controls</h3></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Gateway IP (optional)</label>
+                <input type="text" id="gateway-input" placeholder="Auto-detect if empty" value="{{ gateway or '' }}">
+            </div>
+            <div class="form-group">
+                <label>Poll Interval (seconds)</label>
+                <input type="number" id="interval-input" value="5" min="1" max="60">
+            </div>
+            <div class="flex gap-8">
+                {% if not monitor_running %}
+                <button class="btn btn-success" onclick="startMonitor()">Start Monitoring</button>
+                {% else %}
+                <button class="btn btn-danger" onclick="stopMonitor()">Stop Monitoring</button>
+                {% endif %}
+                <button class="btn" onclick="clearAlerts()">Clear Alerts</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Monitor Statistics</h3>
+        </div>
+        <div class="card-body">
+            <div class="stats-grid" style="margin-bottom:0;">
+                <div class="stat-card">
+                    <div class="label">Total Alerts</div>
+                    <div class="value info" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Critical</div>
+                    <div class="value critical" id="stat-critical">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">High</div>
+                    <div class="value high" id="stat-high">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Medium</div>
+                    <div class="value medium" id="stat-medium">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>&#9654; Live Alert Feed</h3>
+        <span class="text-muted text-sm" id="last-alert-time"></span>
+    </div>
+    <div class="card-body no-pad" style="max-height:500px;overflow-y:auto;" id="alert-feed">
+        {% if alerts %}
+        {% for a in alerts|reverse %}
+        <div class="alert-row" data-severity="{{ a.severity }}">
+            <span class="badge-severity badge-{{ a.severity|lower }}">{{ a.severity }}</span>
+            <span class="time">{{ a.timestamp|int }}</span>
+            <span class="ip">{{ a.source_ip }}</span>
+            <span class="desc">{{ a.description }}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state" id="empty-feed">
+            <div class="icon">&#9654;</div>
+            <p>Start monitoring to see live alerts</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var socket = io();
+var alertStats = {total: 0, critical: 0, high: 0, medium: 0};
+
+socket.on('arp_alert', function(data) {
+    addAlertToFeed(data);
+    updateStats(data.severity);
+});
+
+socket.on('status', function(data) {
+    document.getElementById('monitor-label').textContent = data.monitor_running ? 'Monitoring active' : 'Monitor stopped';
+});
+
+function startMonitor() {
+    var gateway = document.getElementById('gateway-input').value;
+    var interval = parseInt(document.getElementById('interval-input').value) || 5;
+    apiPost('/api/monitor/start', {gateway_ip: gateway, interval: interval}, function(data) {
+        toast('Monitor started', 'success');
+        document.getElementById('monitor-status').querySelector('.dot').className = 'dot status-dot monitoring';
+        document.getElementById('monitor-label').textContent = 'Monitoring active';
+        location.reload();
+    });
+}
+
+function stopMonitor() {
+    apiPost('/api/monitor/stop', {}, function(data) {
+        toast('Monitor stopped', 'info');
+        document.getElementById('monitor-status').querySelector('.dot').className = 'dot status-dot offline';
+        document.getElementById('monitor-label').textContent = 'Monitor stopped';
+        location.reload();
+    });
+}
+
+function addAlertToFeed(alert) {
+    var feed = document.getElementById('alert-feed');
+    var empty = document.getElementById('empty-feed');
+    if (empty) empty.remove();
+
+    var colors = {CRITICAL: 'critical', HIGH: 'high', MEDIUM: 'medium', LOW: 'low'};
+    var row = document.createElement('div');
+    row.className = 'alert-row';
+    row.setAttribute('data-severity', alert.severity);
+
+    var time = new Date(alert.timestamp * 1000);
+    var timeStr = time.toLocaleTimeString();
+
+    row.innerHTML = '<span class="badge-severity badge-' + (colors[alert.severity] || 'low') + '">' + alert.severity + '</span>' +
+        '<span class="time">' + timeStr + '</span>' +
+        '<span class="ip">' + alert.source_ip + '</span>' +
+        '<span class="desc">' + alert.description + '</span>';
+
+    feed.insertBefore(row, feed.firstChild);
+    document.getElementById('last-alert-time').textContent = 'Last: ' + timeStr;
+    document.getElementById('alert-count-badge').textContent = 'Alerts: ' + feed.children.length;
+}
+
+function updateStats(severity) {
+    alertStats.total++;
+    alertStats[severity.toLowerCase()] = (alertStats[severity.toLowerCase()] || 0) + 1;
+    document.getElementById('stat-total').textContent = alertStats.total;
+    document.getElementById('stat-critical').textContent = alertStats.critical;
+    document.getElementById('stat-high').textContent = alertStats.high;
+    document.getElementById('stat-medium').textContent = alertStats.medium;
+}
+
+function clearAlerts() {
+    document.getElementById('alert-feed').innerHTML = '<div class="empty-state" id="empty-feed"><div class="icon">&#10003;</div><p>Alerts cleared</p></div>';
+    alertStats = {total: 0, critical: 0, high: 0, medium: 0};
+    updateStats('');
+}
+</script>
+{% endblock %}

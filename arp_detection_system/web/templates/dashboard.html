@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Dashboard</h2>
+        <div class="subtitle">
+            {% if selected_server %}
+                Monitoring: <strong>{{ selected_server }}</strong>
+                &mdash; Gateway: {{ gateway or 'N/A' }} | Server IP: {{ local_ip or 'N/A' }}
+            {% else %}
+                No server selected. Use the selector above to connect to a remote server.
+            {% endif %}
+        </div>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary" onclick="connectAll()">&#9741; Connect All</button>
+        <button class="btn btn-success" onclick="quickDetect()">&#9888; Quick Scan</button>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Alerts</div>
+        <div class="value info">{{ total_alerts }}</div>
+        <div class="detail">All detected ARP anomalies</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Critical</div>
+        <div class="value critical">{{ critical_count }}</div>
+        <div class="detail">Requires immediate action</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">High Severity</div>
+        <div class="value high">{{ high_count }}</div>
+        <div class="detail">Investigation needed</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Medium</div>
+        <div class="value medium">{{ medium_count }}</div>
+        <div class="detail">Monitor closely</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Servers</div>
+        <div class="value success">{{ servers|length }}</div>
+        <div class="detail">Configured targets</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Connected</div>
+        <div class="value {% if server_info.values()|selectattr('connected')|list|length > 0 %}success{% else %}critical{% endif %}">
+            {{ server_info.values()|selectattr('connected')|list|length }}
+        </div>
+        <div class="detail">Online servers</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Monitor</div>
+        <div class="value {% if monitor_running %}success{% else %}medium{% endif %}">
+            {% if monitor_running %}ON{% else %}OFF{% endif %}
+        </div>
+        <div class="detail">{% if monitor_running %}Real-time active{% else %}Monitor stopped{% endif %}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">ARP Entries</div>
+        <div class="value info">{{ arp_entries|length }}</div>
+        <div class="detail">{% if selected_server %}From {{ selected_server }}{% else %}No server selected{% endif %}</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header">
+            <h3>&#9783; Server Status</h3>
+        </div>
+        <div class="card-body no-pad">
+            {% if servers %}
+            <table>
+                <thead><tr><th>Server</th><th>Host</th><th>OS</th><th>Gateway</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                {% for s in servers %}
+                {% set info = server_info.get(s.name, {}) %}
+                <tr style="{% if selected_server == s.name %}background:var(--info-bg);{% endif %}">
+                    <td>
+                        <strong>{{ s.name }}</strong>
+                        {% if selected_server == s.name %}<span class="badge-severity badge-success" style="margin-left:4px;">ACTIVE</span>{% endif %}
+                    </td>
+                    <td class="text-mono text-sm">{{ s.host }}</td>
+                    <td><span class="tag tag-{{ s.os_type }}">{{ s.os_type }}</span></td>
+                    <td class="text-mono text-sm">{{ info.gateway or 'N/A' }}</td>
+                    <td>
+                        {% if info.connected %}
+                        <span class="status-dot online"></span>Connected
+                        {% else %}
+                        <span class="status-dot offline"></span>Offline
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if info.connected %}
+                        <div class="flex gap-8">
+                            <button class="btn btn-sm btn-primary" onclick="switchServer('{{ s.name }}')">Select</button>
+                            <button class="btn btn-sm" onclick="disconnectServer('{{ s.name }}')">Disconnect</button>
+                        </div>
+                        {% else %}
+                        <button class="btn btn-sm btn-primary" onclick="connectServer('{{ s.name }}')">Connect</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state"><div class="icon">&#9783;</div><p>No servers configured</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>&#9654; Recent Alerts</h3>
+            <a href="/monitor" class="btn btn-sm">View All</a>
+        </div>
+        <div class="card-body no-pad" style="max-height:360px;overflow-y:auto;">
+            {% if alerts %}
+            {% for a in alerts|reverse %}
+            <div class="alert-row">
+                <span class="badge-severity badge-{{ a.severity|lower }}">{{ a.severity }}</span>
+                <span class="ip">{{ a.source_ip }}</span>
+                <span class="text-muted text-sm">{{ a.server|default('local') }}</span>
+                <span class="desc">{{ a.description|truncate(40) }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state"><div class="icon">&#10003;</div><p>No alerts detected</p></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card mt-16">
+    <div class="card-header">
+        <h3>&#9632; ARP Table {% if selected_server %}from {{ selected_server }}{% endif %}</h3>
+        <button class="btn btn-sm" onclick="refreshArpTable()">Refresh</button>
+    </div>
+    <div class="card-body no-pad">
+        {% if arp_entries %}
+        <table>
+            <thead><tr><th>IP Address</th><th>MAC Address</th><th>Notes</th></tr></thead>
+            <tbody id="arp-table-body">
+            {% for e in arp_entries %}
+            <tr>
+                <td class="text-mono">{{ e.ip }}</td>
+                <td class="text-mono text-sm">{{ e.mac }}</td>
+                <td>
+                    {% if gateway and e.ip == gateway %}<span class="badge-severity badge-success">Gateway</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">&#9632;</div>
+            <p>{% if selected_server %}Connecting to {{ selected_server }}...{% else %}Select a server to view its ARP table{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function connectAll() {
+    apiPost('/api/connect-all', {}, function(data) {
+        var count = Object.values(data).filter(function(v) { return v; }).length;
+        toast('Connected to ' + count + ' servers', 'success');
+        setTimeout(function() { location.reload(); }, 1000);
+    });
+}
+function connectServer(name) {
+    apiPost('/api/connect', {server_name: name}, function(data) {
+        toast('Connected to ' + name + ' (Gateway: ' + (data.gateway || 'N/A') + ')', 'success');
+        setTimeout(function() { location.reload(); }, 1000);
+    }, function() { toast('Connection failed', 'error'); });
+}
+function disconnectServer(name) {
+    apiPost('/api/disconnect', {server_name: name}, function() {
+        toast('Disconnected from ' + name, 'success');
+        setTimeout(function() { location.reload(); }, 1000);
+    });
+}
+function quickDetect() {
+    apiPost('/api/detect', {}, function(data) {
+        var v = data.validations || [];
+        var server = data.server || 'unknown';
+        toast('Scan on ' + server + ': ' + v.length + ' findings', v.length > 0 ? 'warning' : 'success');
+    });
+}
+function refreshArpTable() {
+    apiGet('/api/arp-table', function(data) {
+        var tbody = document.getElementById('arp-table-body');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-muted" style="text-align:center;padding:20px;">No ARP entries</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.map(function(e) {
+            return '<tr><td class="text-mono">' + e.ip + '</td><td class="text-mono text-sm">' + e.mac + '</td><td></td></tr>';
+        }).join('');
+    });
+}
+</script>
+{% endblock %}

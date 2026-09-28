@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Servers - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Server Management</h2>
+        <div class="subtitle">Manage Linux and Windows server connections</div>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary" onclick="showAddServer()">&#43; Add Server</button>
+        <button class="btn btn-success" onclick="connectAll()">&#9741; Connect All</button>
+        <button class="btn btn-danger" onclick="disconnectAll()">&#9746; Disconnect All</button>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Servers</div>
+        <div class="value info">{{ servers|length }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Connected</div>
+        <div class="value {% if servers|selectattr('connected')|list|length > 0 %}success{% else %}critical{% endif %}">
+            {{ servers|selectattr('connected')|list|length }}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Disconnected</div>
+        <div class="value medium">
+            {{ servers|rejectattr('connected')|list|length }}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h3>Configured Servers</h3></div>
+    <div class="card-body no-pad">
+        {% if servers %}
+        <table>
+            <thead><tr><th>Name</th><th>Host</th><th>OS</th><th>Port</th><th>ARP Entries</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for s in servers %}
+            <tr>
+                <td><strong>{{ s.config.name }}</strong></td>
+                <td class="text-mono text-sm">{{ s.config.host }}</td>
+                <td><span class="tag tag-{{ s.config.os_type }}">{{ s.config.os_type }}</span></td>
+                <td class="text-mono">{{ s.config.port if s.config.os_type == 'linux' else s.config.winrm_port }}</td>
+                <td>{{ s.arp_count }}</td>
+                <td>
+                    {% if s.connected %}
+                    <span class="status-dot online"></span>Connected
+                    {% else %}
+                    <span class="status-dot offline"></span>Offline
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="flex gap-8">
+                        {% if s.connected %}
+                        <button class="btn btn-sm" onclick="collectData('{{ s.config.name }}')">Collect</button>
+                        <button class="btn btn-sm" onclick="viewLogs('{{ s.config.name }}')">Logs</button>
+                        <button class="btn btn-sm btn-danger" onclick="disconnectServer('{{ s.config.name }}')">Disconnect</button>
+                        {% else %}
+                        <button class="btn btn-sm btn-primary" onclick="connectServer('{{ s.config.name }}')">Connect</button>
+                        <button class="btn btn-sm btn-danger" onclick="removeServer('{{ s.config.name }}')">Remove</button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><div class="icon">&#9783;</div><p>No servers configured. Click "Add Server" to get started.</p></div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="server-data-display" class="card mt-16" style="display:none;">
+    <div class="card-header">
+        <h3 id="server-data-title">Server Data</h3>
+        <button class="btn btn-sm" onclick="document.getElementById('server-data-display').style.display='none'">Close</button>
+    </div>
+    <div class="card-body" id="server-data-content"></div>
+</div>
+
+<div class="modal-overlay" id="add-server-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Add New Server</h3>
+            <button class="btn btn-sm" onclick="closeModal('add-server-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Server Name</label>
+                <input type="text" id="new-name" placeholder="e.g., web-server-1">
+            </div>
+            <div class="form-group">
+                <label>Host / IP</label>
+                <input type="text" id="new-host" placeholder="e.g., 192.168.1.100">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>OS Type</label>
+                    <select id="new-os">
+                        <option value="linux">Linux</option>
+                        <option value="windows">Windows</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Port</label>
+                    <input type="number" id="new-port" value="22">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="new-username" placeholder="root / Administrator">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="new-password" placeholder="Enter password">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>SSH Key Path (Linux only, optional)</label>
+                <input type="text" id="new-sshkey" placeholder="~/.ssh/id_rsa">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('add-server-modal')">Cancel</button>
+            <button class="btn btn-primary" onclick="addServer()">Add Server</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showAddServer() { document.getElementById('add-server-modal').classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+function addServer() {
+    var data = {
+        name: document.getElementById('new-name').value,
+        host: document.getElementById('new-host').value,
+        os_type: document.getElementById('new-os').value,
+        port: document.getElementById('new-port').value,
+        username: document.getElementById('new-username').value,
+        password: document.getElementById('new-password').value,
+        ssh_key_path: document.getElementById('new-sshkey').value,
+    };
+    if (!data.name || !data.host) { toast('Name and host required', 'error'); return; }
+    apiPost('/api/servers/add', data, function() {
+        toast('Server added', 'success');
+        closeModal('add-server-modal');
+        setTimeout(() => location.reload(), 500);
+    });
+}
+
+function connectServer(name) {
+    apiPost('/api/connect', {server_name: name}, function() {
+        toast('Connected to ' + name, 'success');
+        setTimeout(() => location.reload(), 1000);
+    }, function() { toast('Connection failed', 'error'); });
+}
+
+function disconnectServer(name) {
+    apiPost('/api/disconnect', {server_name: name}, function() {
+        toast('Disconnected', 'success');
+        setTimeout(() => location.reload(), 1000);
+    });
+}
+
+function connectAll() {
+    apiPost('/api/connect-all', {}, function(data) {
+        let count = Object.values(data).filter(v => v).length;
+        toast('Connected to ' + count + ' servers', 'success');
+        setTimeout(() => location.reload(), 1000);
+    });
+}
+
+function disconnectAll() {
+    apiPost('/api/disconnect-all', {}, function() {
+        toast('All servers disconnected', 'success');
+        setTimeout(() => location.reload(), 1000);
+    });
+}
+
+function removeServer(name) {
+    if (!confirm('Remove server ' + name + '?')) return;
+    apiPost('/api/servers/remove', {name: name}, function() {
+        toast('Server removed', 'success');
+        setTimeout(() => location.reload(), 500);
+    });
+}
+
+function collectData(name) {
+    apiPost('/api/collect', {server_name: name}, function(data) {
+        var div = document.getElementById('server-data-display');
+        var title = document.getElementById('server-data-title');
+        var content = document.getElementById('server-data-content');
+        title.textContent = name + ' - Collected Data';
+        var html = '<p><strong>ARP Entries:</strong> ' + (data.arp_table ? data.arp_table.length : 0) + '</p>';
+        html += '<p><strong>Log Entries:</strong> ' + (data.log_count || 0) + '</p>';
+        if (data.arp_table && data.arp_table.length > 0) {
+            html += '<table style="margin-top:12px;"><thead><tr><th>IP</th><th>MAC</th></tr></thead><tbody>';
+            data.arp_table.forEach(function(e) {
+                html += '<tr><td class="text-mono">' + e.ip + '</td><td class="text-mono text-sm">' + e.mac + '</td></tr>';
+            });
+            html += '</tbody></table>';
+        }
+        if (data.logs && data.logs.length > 0) {
+            html += '<p style="margin-top:12px;"><strong>Logs:</strong></p>';
+            data.logs.forEach(function(l) {
+                html += '<div class="log-entry ' + l.severity.toLowerCase() + '"><span class="badge-severity badge-' + l.severity.toLowerCase() + '">' + l.severity + '</span> ' + l.category + ': ' + l.message + '</div>';
+            });
+        }
+        content.innerHTML = html;
+        div.style.display = 'block';
+    });
+}
+
+function viewLogs(name) {
+    apiGet('/api/logs/' + name, function(data) {
+        var div = document.getElementById('server-data-display');
+        var title = document.getElementById('server-data-title');
+        var content = document.getElementById('server-data-content');
+        title.textContent = name + ' - Server Logs';
+        var html = '';
+        if (data.length > 0) {
+            data.forEach(function(l) {
+                html += '<div class="log-entry ' + l.severity.toLowerCase() + '"><span class="badge-severity badge-' + l.severity.toLowerCase() + '">' + l.severity + '</span> [' + l.category + '] ' + l.message + '</div>';
+            });
+        } else {
+            html = '<div class="empty-state"><p>No ARP-related log entries found</p></div>';
+        }
+        content.innerHTML = html;
+        div.style.display = 'block';
+    });
+}
+</script>
+{% endblock %}

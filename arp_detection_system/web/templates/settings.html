@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Settings - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Settings</h2>
+        <div class="subtitle">Configure detection thresholds, remediation policies, and system behavior</div>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary" onclick="saveSettings()">&#10003; Save Settings</button>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-header"><h3>&#9888; Detection Settings</h3></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Gateway IP (empty = auto-detect)</label>
+                <input type="text" id="set-gateway" value="{{ config.detection.gateway_ip }}" placeholder="Auto-detect">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ARP Poll Interval (seconds)</label>
+                    <input type="number" id="set-poll-interval" value="{{ config.detection.arp_table_poll_interval }}" min="1" max="300">
+                </div>
+                <div class="form-group">
+                    <label>Alert Threshold</label>
+                    <input type="number" id="set-alert-threshold" value="{{ config.detection.alert_threshold }}" min="1" max="100">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>MAC Change Sensitivity</label>
+                    <input type="number" id="set-mac-sensitivity" value="{{ config.detection.mac_change_sensitivity }}" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label>Max ARP Rate (per second)</label>
+                    <input type="number" id="set-max-rate" value="{{ config.detection.max_arp_rate_per_second }}" min="10" max="1000">
+                </div>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="set-dup-detection" {% if config.detection.duplicate_ip_detection %}checked{% endif %}>
+                <label for="set-dup-detection">Enable duplicate IP detection</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="set-gratuitous" {% if config.detection.gratuitous_arp_detection %}checked{% endif %}>
+                <label for="set-gratuitous">Enable gratuitous ARP detection</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="set-rate-limit" {% if config.detection.rate_limit_detection %}checked{% endif %}>
+                <label for="set-rate-limit">Enable rate-limit detection</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>&#9881; Remediation Settings</h3></div>
+        <div class="card-body">
+            <div class="form-check mb-16">
+                <input type="checkbox" id="set-notify-only" {% if config.remediation.notify_only %}checked{% endif %}>
+                <label for="set-notify-only">Notify-only mode (no auto-actions)</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="set-auto-block" {% if config.remediation.auto_block %}checked{% endif %}>
+                <label for="set-auto-block">Auto-block malicious ARP sources</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="set-auto-isolate" {% if config.remediation.auto_isolate %}checked{% endif %}>
+                <label for="set-auto-isolate">Auto-isolate on critical attacks</label>
+            </div>
+            <div class="form-group">
+                <label>Block Duration (seconds)</label>
+                <input type="number" id="set-block-duration" value="{{ config.remediation.block_duration_seconds }}" min="30" max="86400">
+            </div>
+            <div class="form-group">
+                <label>Max Block Time (seconds)</label>
+                <input type="number" id="set-max-block" value="{{ config.remediation.max_block_time }}" min="60" max="86400">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-16">
+    <div class="card-header"><h3>&#9881; General Settings</h3></div>
+    <div class="card-body">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Log Level</label>
+                <select id="set-log-level">
+                    <option value="DEBUG" {% if config.log_level == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+                    <option value="INFO" {% if config.log_level == 'INFO' %}selected{% endif %}>INFO</option>
+                    <option value="WARNING" {% if config.log_level == 'WARNING' %}selected{% endif %}>WARNING</option>
+                    <option value="ERROR" {% if config.log_level == 'ERROR' %}selected{% endif %}>ERROR</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Log Retention (days)</label>
+                <input type="number" id="set-retention" value="{{ config.log_retention_days }}" min="1" max="365">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Report Interval (seconds)</label>
+            <input type="number" id="set-report-interval" value="{{ config.report_interval }}" min="60" max="86400">
+        </div>
+    </div>
+</div>
+
+<div class="card mt-16">
+    <div class="card-header"><h3>&#9783; Current Configuration</h3></div>
+    <div class="card-body">
+        <div class="text-sm text-mono" style="white-space:pre-wrap;background:var(--bg-primary);padding:16px;border-radius:8px;max-height:300px;overflow-y:auto;" id="config-view">Loading...</div>
+        <button class="btn mt-8" onclick="loadConfigView()">Refresh Config View</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function saveSettings() {
+    var data = {
+        detection: {
+            arp_table_poll_interval: parseInt(document.getElementById('set-poll-interval').value),
+            gateway_ip: document.getElementById('set-gateway').value,
+            alert_threshold: parseInt(document.getElementById('set-alert-threshold').value),
+            mac_change_sensitivity: parseInt(document.getElementById('set-mac-sensitivity').value),
+            duplicate_ip_detection: document.getElementById('set-dup-detection').checked,
+            gratuitous_arp_detection: document.getElementById('set-gratuitous').checked,
+            rate_limit_detection: document.getElementById('set-rate-limit').checked,
+            max_arp_rate_per_second: parseInt(document.getElementById('set-max-rate').value),
+        },
+        remediation: {
+            auto_block: document.getElementById('set-auto-block').checked,
+            auto_isolate: document.getElementById('set-auto-isolate').checked,
+            block_duration_seconds: parseInt(document.getElementById('set-block-duration').value),
+            notify_only: document.getElementById('set-notify-only').checked,
+            max_block_time: parseInt(document.getElementById('set-max-block').value),
+        }
+    };
+    apiPost('/api/settings', data, function() {
+        toast('Settings saved', 'success');
+        loadConfigView();
+    }, function() { toast('Failed to save settings', 'error'); });
+}
+
+function loadConfigView() {
+    apiGet('/api/status', function(data) {
+        var text = JSON.stringify(data, null, 2);
+        document.getElementById('config-view').textContent = text;
+    });
+}
+
+loadConfigView();
+</script>
+{% endblock %}

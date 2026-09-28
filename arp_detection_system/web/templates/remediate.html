@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+{% block title %}Remediate - ARP Guard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>Advanced Remediation &amp; ARP Control</h2>
+        <div class="subtitle">Block, blackhole, rate-limit, isolate, and manage ARP entries on remote servers</div>
+    </div>
+    <div class="flex gap-8">
+        <button class="btn btn-sm" onclick="refreshAll()">&#8635; Refresh</button>
+    </div>
+</div>
+
+<div class="stats-grid" id="remediation-stats">
+    <div class="stat-card">
+        <div class="label">Total Actions</div>
+        <div class="value info" id="stat-total">0</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Blocked IPs</div>
+        <div class="value critical" id="stat-blocked">0</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Firewall Backend</div>
+        <div class="value success" id="stat-backend">-</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">ARP Entries</div>
+        <div class="value info" id="stat-arp">0</div>
+    </div>
+</div>
+
+<div class="card mb-16">
+    <div class="card-header">
+        <h3>System Info</h3>
+        <button class="btn btn-sm" onclick="loadSystemInfo()">Load Info</button>
+    </div>
+    <div class="card-body" id="system-info-container">
+        <div class="text-muted text-sm">Click "Load Info" to get server details</div>
+    </div>
+</div>
+
+<div class="grid-2 mb-16">
+    <div class="card">
+        <div class="card-header"><h3>&#128683; Block ARP Traffic</h3></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Target IP Address</label>
+                <input type="text" id="block-ip" placeholder="e.g., 192.168.1.50">
+            </div>
+            <div class="form-group">
+                <label>Target MAC (optional, for reference)</label>
+                <input type="text" id="block-mac" placeholder="e.g., AA:BB:CC:DD:EE:FF">
+            </div>
+            <div class="form-group">
+                <label>Reason</label>
+                <input type="text" id="block-reason" placeholder="e.g., Detected spoofing" value="Manual block">
+            </div>
+            <div class="form-group">
+                <label>Target Server</label>
+                <select id="block-server">
+                    <option value="">All Connected Servers</option>
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-danger" onclick="blockIp()">&#128683; Block ARP from IP</button>
+            <div class="text-muted text-xs mt-8">Uses: nft &#8594; arptables &#8594; ebtables &#8594; iptables &#8594; ip neigh</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>&#10003; Unblock ARP Traffic</h3></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Target IP Address</label>
+                <input type="text" id="unblock-ip" placeholder="e.g., 192.168.1.50">
+            </div>
+            <div class="form-group">
+                <label>Target Server</label>
+                <select id="unblock-server">
+                    <option value="">All Connected Servers</option>
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-8">
+                <button class="btn btn-success" onclick="unblockIp()">&#10003; Unblock IP</button>
+                <button class="btn btn-warning" onclick="unblockAll()">&#10003; Unblock ALL</button>
+            </div>
+            <div class="text-muted text-xs mt-8">Removes rules from nft, arptables, ebtables, iptables, ip neigh</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2 mb-16">
+    <div class="card">
+        <div class="card-header"><h3>&#9889; Blackhole IP</h3></div>
+        <div class="card-body">
+            <p class="text-sm text-muted mb-16">Redirects traffic for an IP to a null MAC (00:00:00:00:00:00). Packets are silently dropped.</p>
+            <div class="form-group">
+                <label>Target IP</label>
+                <input type="text" id="blackhole-ip" placeholder="e.g., 192.168.1.50">
+            </div>
+            <div class="form-group">
+                <label>Server</label>
+                <select id="blackhole-server">
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-danger" onclick="blackholeIp()">&#9889; Blackhole IP</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>&#9878; ARP Rate Limiting</h3></div>
+        <div class="card-body">
+            <p class="text-sm text-muted mb-16">Limit how many ARP packets per second the server will process. Drops excess.</p>
+            <div class="form-group">
+                <label>Max ARP per second</label>
+                <input type="number" id="ratelimit-pps" value="10" min="1" max="1000">
+            </div>
+            <div class="form-group">
+                <label>Server</label>
+                <select id="ratelimit-server">
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-8">
+                <button class="btn btn-warning" onclick="applyRateLimit()">&#9878; Apply Rate Limit</button>
+                <button class="btn btn-sm" onclick="removeRateLimit()">&#10003; Remove Limit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2 mb-16">
+    <div class="card">
+        <div class="card-header"><h3>&#8635; Flush ARP Cache</h3></div>
+        <div class="card-body">
+            <p class="text-sm text-muted mb-16">Clears the ARP cache to remove poisoned entries. Server will re-learn correct mappings.</p>
+            <div class="form-group">
+                <label>Target Server</label>
+                <select id="flush-server">
+                    <option value="">All Connected Servers</option>
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-warning" onclick="flushArp()">&#8635; Flush ARP Cache</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>&#9888; Network Isolation</h3></div>
+        <div class="card-body">
+            <p class="text-sm text-muted mb-16"><strong style="color:var(--critical);">Warning:</strong> This will disable the network interface.</p>
+            <div class="form-group">
+                <label>Target Server</label>
+                <select id="isolate-server">
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-8">
+                <button class="btn btn-danger" onclick="isolateNetwork()">&#9888; Isolate</button>
+                <button class="btn btn-success" onclick="restoreNetwork()">&#9741; Restore</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2 mb-16">
+    <div class="card">
+        <div class="card-header"><h3>&#9879; Static ARP Entry</h3></div>
+        <div class="card-body">
+            <p class="text-sm text-muted mb-16">Pin an IP-to-MAC mapping permanently. Prevents spoofing for this entry.</p>
+            <div class="form-group">
+                <label>IP Address</label>
+                <input type="text" id="static-ip" placeholder="192.168.1.1">
+            </div>
+            <div class="form-group">
+                <label>MAC Address</label>
+                <input type="text" id="static-mac" placeholder="AA:BB:CC:DD:EE:FF">
+            </div>
+            <div class="form-group">
+                <label>Server</label>
+                <select id="static-server">
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-8">
+                <button class="btn btn-info" onclick="setStaticArp()">&#9879; Set Static ARP</button>
+                <button class="btn btn-sm" onclick="deleteArpEntry()">&#10003; Delete Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>&#9776; Interface Control</h3></div>
+        <div class="card-body">
+            <p class="text-sm text-muted mb-16">Bring individual network interfaces up or down.</p>
+            <div class="form-group">
+                <label>Interface Name</label>
+                <input type="text" id="iface-name" placeholder="e.g., ens34, eth0, podman0">
+            </div>
+            <div class="form-group">
+                <label>Server</label>
+                <select id="iface-server">
+                    {% for s in servers %}
+                    <option value="{{ s.name }}" {% if selected_server == s.name %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-8">
+                <button class="btn btn-danger" onclick="isolateInterface()">&#128683; Bring DOWN</button>
+                <button class="btn btn-success" onclick="restoreInterface()">&#10003; Bring UP</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-16">
+    <div class="card-header">
+        <h3>&#128269; Firewall Rules Inspection</h3>
+        <button class="btn btn-sm" onclick="loadFirewallRules()">Load Rules</button>
+    </div>
+    <div class="card-body" id="firewall-rules-container">
+        <div class="text-muted text-sm">Click "Load Rules" to inspect nft/arptables/ebtables rules</div>
+    </div>
+</div>
+
+<div class="card mb-16">
+    <div class="card-header">
+        <h3>Current ARP Table (Remote)</h3>
+        <button class="btn btn-sm" onclick="loadRemoteArp()">Refresh</button>
+    </div>
+    <div class="card-body no-pad" id="remote-arp-container">
+        <div class="text-muted text-sm">Loading...</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Remediation History</h3>
+        <button class="btn btn-sm" onclick="refreshAll()">&#8635; Refresh</button>
+    </div>
+    <div class="card-body no-pad" style="max-height:400px;overflow-y:auto;" id="history-container">
+        {% if remediation_records %}
+        {% for r in remediation_records|reverse %}
+        <div class="alert-row">
+            <span class="badge-severity badge-{% if r.status == 'SUCCESS' %}success{% elif r.status == 'FAILED' %}critical{% else %}info{% endif %}">{{ r.action }}</span>
+            <span class="ip">{{ r.target_ip or '' }}</span>
+            <span class="text-muted text-sm">{{ r.server }}</span>
+            <span class="desc">{{ r.status }}{% if r.backend is defined %} ({{ r.backend }}){% endif %}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state" id="empty-history">
+            <div class="icon">&#9881;</div>
+            <p>No remediation actions performed yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function apiPost(url, data, success, error) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                if (success) success(JSON.parse(xhr.responseText));
+            } else {
+                if (error) error(xhr.responseText);
+                else toast('Request failed', 'error');
+            }
+        }
+    };
+    xhr.send(JSON.stringify(data));
+}
+
+function apiGet(url, success) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
+            if (success) success(JSON.parse(xhr.responseText));
+        }
+    };
+    xhr.send();
+}
+
+function getSelectedServer(id) {
+    var el = document.getElementById(id);
+    return el ? el.value : '';
+}
+
+function blockIp() {
+    var ip = document.getElementById('block-ip').value.trim();
+    if (!ip) { toast('Enter an IP address', 'error'); return; }
+    if (!confirm('Block all ARP traffic from ' + ip + '?')) return;
+    var server = getSelectedServer('block-server');
+    var mac = document.getElementById('block-mac').value.trim();
+    var reason = document.getElementById('block-reason').value.trim() || 'Manual block';
+    apiPost('/api/remediate/block', {ip: ip, mac: mac, server_name: server, reason: reason}, function(data) {
+        var successes = Object.entries(data).filter(([k,v]) => v && v.success);
+        if (successes.length > 0) {
+            var backends = successes.map(([k,v]) => k + ':' + v.backend).join(', ');
+            toast('Blocked ' + ip + ' on ' + backends, 'success');
+        } else {
+            toast('Block failed on all servers', 'error');
+        }
+        refreshAll();
+    }, function() { toast('Block request failed', 'error'); });
+}
+
+function unblockIp() {
+    var ip = document.getElementById('unblock-ip').value.trim();
+    if (!ip) { toast('Enter an IP address', 'error'); return; }
+    var server = getSelectedServer('unblock-server');
+    apiPost('/api/remediate/unblock', {ip: ip, server_name: server}, function(data) {
+        var count = Object.values(data).filter(v => v).length;
+        toast('Unblocked ' + ip + ' on ' + count + ' servers', 'success');
+        refreshAll();
+    });
+}
+
+function unblockAll() {
+    if (!confirm('Remove ALL ARP block rules on all servers?')) return;
+    var server = getSelectedServer('unblock-server');
+    apiPost('/api/remediate/unblock-all', {server_name: server}, function(data) {
+        toast('All ARP blocks removed', 'success');
+        refreshAll();
+    });
+}
+
+function blackholeIp() {
+    var ip = document.getElementById('blackhole-ip').value.trim();
+    if (!ip) { toast('Enter an IP address', 'error'); return; }
+    if (!confirm('Blackhole ARP for ' + ip + '? Traffic will be silently dropped.')) return;
+    var server = getSelectedServer('blackhole-server');
+    apiPost('/api/remediate/blackhole', {ip: ip, server_name: server}, function(data) {
+        if (data.success) toast('Blackholed ' + ip, 'success');
+        else toast('Blackhole failed', 'error');
+        refreshAll();
+    });
+}
+
+function applyRateLimit() {
+    var pps = parseInt(document.getElementById('ratelimit-pps').value) || 10;
+    var server = getSelectedServer('ratelimit-server');
+    if (!confirm('Limit ARP to ' + pps + ' packets/sec on ' + server + '?')) return;
+    apiPost('/api/remediate/rate-limit', {max_per_second: pps, server_name: server}, function(data) {
+        if (data.success) toast('Rate limit applied: ' + pps + '/s', 'success');
+        else toast('Rate limit failed', 'error');
+    });
+}
+
+function removeRateLimit() {
+    var server = getSelectedServer('ratelimit-server');
+    apiPost('/api/remediate/rate-limit', {max_per_second: 999999, server_name: server}, function(data) {
+        toast('Rate limit removed', 'success');
+    });
+}
+
+function flushArp() {
+    var server = getSelectedServer('flush-server');
+    if (!confirm('Flush ARP cache' + (server ? ' on ' + server : ' on all servers') + '?')) return;
+    apiPost('/api/remediate/flush', {server_name: server}, function(data) {
+        toast('ARP cache flushed', 'success');
+        refreshAll();
+    });
+}
+
+function isolateNetwork() {
+    var server = getSelectedServer('isolate-server');
+    if (!server) { toast('Select a server', 'error'); return; }
+    if (!confirm('WARNING: This will disable the network on ' + server + '. Continue?')) return;
+    apiPost('/api/remediate/isolate', {server_name: server}, function(data) {
+        if (data.success) toast('Network isolated on ' + server, 'warning');
+        else toast('Isolation failed', 'error');
+        refreshAll();
+    });
+}
+
+function restoreNetwork() {
+    var server = getSelectedServer('isolate-server');
+    if (!server) { toast('Select a server', 'error'); return; }
+    apiPost('/api/remediate/restore', {server_name: server}, function(data) {
+        toast('Network restored on ' + server, 'success');
+        refreshAll();
+    });
+}
+
+function setStaticArp() {
+    var ip = document.getElementById('static-ip').value.trim();
+    var mac = document.getElementById('static-mac').value.trim();
+    if (!ip || !mac) { toast('Enter IP and MAC', 'error'); return; }
+    var server = getSelectedServer('static-server');
+    apiPost('/api/remediate/set-static', {ip: ip, mac: mac, server_name: server}, function(data) {
+        if (data.success) toast('Static ARP set: ' + ip + ' -> ' + mac, 'success');
+        else toast('Failed to set static ARP', 'error');
+        refreshAll();
+    });
+}
+
+function deleteArpEntry() {
+    var ip = document.getElementById('static-ip').value.trim();
+    if (!ip) { toast('Enter IP to delete', 'error'); return; }
+    var server = getSelectedServer('static-server');
+    if (!confirm('Delete ARP entry for ' + ip + '?')) return;
+    apiPost('/api/remediate/delete-entry', {ip: ip, server_name: server}, function(data) {
+        if (data.success) toast('Deleted ARP entry for ' + ip, 'success');
+        else toast('Delete failed', 'error');
+        refreshAll();
+    });
+}
+
+function isolateInterface() {
+    var iface = document.getElementById('iface-name').value.trim();
+    if (!iface) { toast('Enter interface name', 'error'); return; }
+    var server = getSelectedServer('iface-server');
+    if (!confirm('Bring interface ' + iface + ' DOWN on ' + server + '?')) return;
+    apiPost('/api/remediate/isolate-interface', {interface: iface, server_name: server}, function(data) {
+        if (data.success) toast('Interface ' + iface + ' is DOWN', 'warning');
+        else toast('Failed', 'error');
+    });
+}
+
+function restoreInterface() {
+    var iface = document.getElementById('iface-name').value.trim();
+    if (!iface) { toast('Enter interface name', 'error'); return; }
+    var server = getSelectedServer('iface-server');
+    apiPost('/api/remediate/restore-interface', {interface: iface, server_name: server}, function(data) {
+        if (data.success) toast('Interface ' + iface + ' is UP', 'success');
+        else toast('Failed', 'error');
+    });
+}
+
+function loadFirewallRules() {
+    var server = getSelectedServer('block-server') || getSelectedServer('flush-server');
+    if (!server) { toast('Select a server first', 'error'); return; }
+    var container = document.getElementById('firewall-rules-container');
+    container.innerHTML = '<div class="text-muted">Loading...</div>';
+    apiGet('/api/remediate/firewall-rules?server=' + encodeURIComponent(server), function(data) {
+        if (data.error) { container.innerHTML = '<div class="text-muted">' + data.error + '</div>'; return; }
+        var html = '<div class="text-sm"><strong>Backend:</strong> ' + (data.backend || 'unknown') + '</div>';
+        if (data.nft_arp_table) {
+            html += '<pre style="background:var(--bg-secondary);padding:12px;border-radius:6px;margin-top:8px;font-size:12px;overflow-x:auto;">' + data.nft_arp_table + '</pre>';
+        }
+        if (data.raw) {
+            html += '<pre style="background:var(--bg-secondary);padding:12px;border-radius:6px;margin-top:8px;font-size:12px;overflow-x:auto;">' + data.raw + '</pre>';
+        } else if (data.rules && data.rules.length > 0) {
+            html += '<pre style="background:var(--bg-secondary);padding:12px;border-radius:6px;margin-top:8px;font-size:12px;">' + data.rules.join('\n') + '</pre>';
+        } else {
+            html += '<div class="text-muted mt-8">No active rules found</div>';
+        }
+        container.innerHTML = html;
+    });
+}
+
+function loadSystemInfo() {
+    var server = getSelectedServer('block-server') || getSelectedServer('flush-server');
+    if (!server) { toast('Select a server first', 'error'); return; }
+    var container = document.getElementById('system-info-container');
+    container.innerHTML = '<div class="text-muted">Loading...</div>';
+    apiGet('/api/remediate/system-info?server=' + encodeURIComponent(server), function(data) {
+        if (data.error) { container.innerHTML = '<div class="text-muted">' + data.error + '</div>'; return; }
+        var html = '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">';
+        html += '<div><strong>OS:</strong> ' + (data.os || '-') + '</div>';
+        html += '<div><strong>Kernel:</strong> ' + (data.kernel || '-') + '</div>';
+        html += '<div><strong>Hostname:</strong> ' + (data.hostname || '-') + '</div>';
+        html += '<div><strong>Firewall:</strong> ' + (data.firewall_backend || '-') + '</div>';
+        html += '</div>';
+        container.innerHTML = html;
+        document.getElementById('stat-backend').textContent = data.firewall_backend || '-';
+    });
+}
+
+function loadRemoteArp() {
+    var server = getSelectedServer('block-server') || getSelectedServer('flush-server');
+    if (!server) return;
+    var container = document.getElementById('remote-arp-container');
+    container.innerHTML = '<div class="text-muted">Loading...</div>';
+    apiGet('/api/arp-table/' + encodeURIComponent(server), function(data) {
+        if (data.error) { container.innerHTML = '<div class="text-muted">' + data.error + '</div>'; return; }
+        if (!data || data.length === 0) { container.innerHTML = '<div class="text-muted">No ARP entries</div>'; return; }
+        var html = '<table style="width:100%;font-size:13px"><thead><tr><th style="padding:8px;text-align:left">IP</th><th style="padding:8px;text-align:left">MAC</th><th style="padding:8px;text-align:left">Actions</th></tr></thead><tbody>';
+        data.forEach(function(e) {
+            html += '<tr style="border-top:1px solid var(--border)">';
+            html += '<td style="padding:8px">' + e.ip + '</td>';
+            html += '<td style="padding:8px;font-family:monospace">' + e.mac + '</td>';
+            html += '<td style="padding:8px"><button class="btn btn-sm btn-danger" onclick="quickBlock(\'' + e.ip + '\')">Block</button> ';
+            html += '<button class="btn btn-sm" onclick="quickBlackhole(\'' + e.ip + '\')">Blackhole</button></td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        document.getElementById('stat-arp').textContent = data.length;
+    });
+}
+
+function quickBlock(ip) {
+    document.getElementById('block-ip').value = ip;
+    blockIp();
+}
+
+function quickBlackhole(ip) {
+    document.getElementById('blackhole-ip').value = ip;
+    blackholeIp();
+}
+
+function refreshAll() {
+    apiGet('/api/status', function(data) {
+        var info = data.servers || {};
+        var total = 0;
+        var blocked = 0;
+        Object.values(info).forEach(function(s) {
+            total++;
+            if (s.connected) blocked++;
+        });
+        document.getElementById('stat-total').textContent = Object.keys(info).length;
+        loadRemoteArp();
+        location.reload();
+    });
+}
+
+loadRemoteArp();
+</script>
+{% endblock %}

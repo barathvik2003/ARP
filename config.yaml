@@ -1,0 +1,37 @@
+detection:
+  alert_threshold: 3
+  arp_table_poll_interval: 10
+  duplicate_ip_detection: true
+  gateway_ip: 172.16.50.1
+  gratuitous_arp_detection: true
+  mac_change_sensitivity: 1
+  max_arp_rate_per_second: 50
+  rate_limit_detection: true
+log_level: INFO
+log_retention_days: 30
+remediation:
+  auto_block: false
+  auto_isolate: false
+  block_duration_seconds: 300
+  max_block_time: 3600
+  notify_only: true
+report_interval: 3600
+servers:
+- host: 100.104.140.120
+  name: RHEL
+  os_type: linux
+  password: root@123
+  port: 22
+  ssh_key_path: ''
+  username: root
+  winrm_port: 5985
+  winrm_use_ssl: false
+- host: 172.21.12.233
+  name: kali
+  os_type: linux
+  password: kali
+  port: 22
+  ssh_key_path: ''
+  username: kali
+  winrm_port: 5985
+  winrm_use_ssl: false

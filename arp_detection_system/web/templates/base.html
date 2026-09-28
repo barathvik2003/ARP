@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ARP Detection System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="shield">A</div>
+            <div>
+                <h1>ARP Guard</h1>
+                <span>Detection System</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="section-label">Overview</div>
+            <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                <span class="icon">&#9632;</span>
+                <span>Dashboard</span>
+            </a>
+            <div class="section-label">Monitoring</div>
+            <a href="/monitor" class="nav-item {% if request.path == '/monitor' %}active{% endif %}">
+                <span class="icon">&#9654;</span>
+                <span>Live Monitor</span>
+            </a>
+            <a href="/detect" class="nav-item {% if request.path == '/detect' %}active{% endif %}">
+                <span class="icon">&#9888;</span>
+                <span>Detection</span>
+            </a>
+            <div class="section-label">Infrastructure</div>
+            <a href="/servers" class="nav-item {% if request.path == '/servers' %}active{% endif %}">
+                <span class="icon">&#9783;</span>
+                <span>Servers</span>
+            </a>
+            <a href="/logs" class="nav-item {% if request.path == '/logs' %}active{% endif %}">
+                <span class="icon">&#9776;</span>
+                <span>Logs</span>
+            </a>
+            <div class="section-label">Response</div>
+            <a href="/remediate" class="nav-item {% if request.path == '/remediate' %}active{% endif %}">
+                <span class="icon">&#9881;</span>
+                <span>Remediate</span>
+            </a>
+            <div class="section-label">System</div>
+            <a href="/settings" class="nav-item {% if request.path == '/settings' %}active{% endif %}">
+                <span class="icon">&#9881;</span>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="server-selector-bar">
+            <span class="text-sm text-muted">Active Server:</span>
+            <select id="global-server-select" onchange="switchServer(this.value)">
+                <option value="">-- Select Server --</option>
+                {% for s in servers|default([], true) %}
+                <option value="{{ s.name }}" {% if selected_server|default('') == s.name %}selected{% endif %}>
+                    {{ s.name }} ({{ s.host }})
+                </option>
+                {% endfor %}
+            </select>
+            <span id="server-status-badge" class="badge-severity badge-info" style="display:none;">Connected</span>
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
